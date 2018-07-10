@@ -6,7 +6,7 @@ var config = {
         database: {
             url: 'mongodb://' + dbConfig.development.host + '/' + dbConfig.development.database,
         },
-        domain: 'https://www.localhost'
+        domain: 'http://localhost:3000'
     },
     staging: {
         port: 8080,
@@ -14,7 +14,7 @@ var config = {
         database: {
             url: 'mongodb://' + dbConfig.staging.host + ':' +  dbConfig.staging.port + '/' + dbConfig.staging.database,
         },
-        domain: ''
+        domain: 'http://bambuuserprofiling-env.w4fnm282gw.ap-southeast-1.elasticbeanstalk.com'
 
     },
     production: {

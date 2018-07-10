@@ -5,10 +5,10 @@
     "host": "localhost"
   },
   "staging" : {
-    "driver": "",
-    "database": "",
-    "port": "",
-    "host": ""
+    "driver": "mongodb",
+    "database": "bambu",
+    "port": "33551",
+    "host": "bambu123:bambu123@ds233551.mlab.com"
   },
   "production" : {
     "driver": "",
