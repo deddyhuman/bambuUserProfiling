@@ -1,41 +1,63 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var express = require('express'),
+    app = express(),
+    config = require('./config/config.js')(app.get('env')),
+    path = require('path'),
+    logger = require('morgan'),
+    cookieParser = require('cookie-parser'),
+    bodyParser = require('body-parser'),
+    mongoose = require('mongoose');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// connect to database
+mongoose.connect(config.database.url);
+var database = mongoose.connection;
+database.on('error', console.error.bind('Database Connection Failed'));
+database.once('open', function() {
+    console.log('\nO===> Database Connection Established on ' + config.database.url + '\n');
+    app.locals.db = database;
+});
 
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+if (app.get('env') == 'production') {
+    app.enable('view cache');
+}
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '10mb'}));
+app.use(bodyParser.urlencoded({limit: '10mb', extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// setting necessary configurations into app locals scope
+app.locals.environment = app.get('env');
+app.locals.config = config;
+
+/**
+ * load our routes and pass in our app and fully configured pass
+ */
+app.use('/', require('./controller/index.js'));
+app.use('/user', require('./controller/user.js'));
+
+
+console.log('\nO===> Start API on ' + app.get('env').toUpperCase() + ' environment ' + new Date().toString() + '\n');
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+    createApiRes(req, res, 404, {}, 'Route not found');
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+    app.use(function(err, req, res, next) {
+        log(err);
+        return res.status(err.status || 500).json({
+            error: err
+        });
+    });
+}
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+    return res.status(err.status || 500).json("API V1.0.0");
 });
 
 module.exports = app;

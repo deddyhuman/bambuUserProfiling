@@ -1,0 +1,19 @@
+{
+  "development" : {
+    "driver": "mongodb",
+    "database": "bambu",
+    "host": "localhost"
+  },
+  "staging" : {
+    "driver": "",
+    "database": "",
+    "port": "",
+    "host": ""
+  },
+  "production" : {
+    "driver": "",
+    "database": "",
+    "port": "",
+    "host": ""
+  }
+}
