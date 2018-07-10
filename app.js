@@ -7,6 +7,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose');
 
+
 // connect to database
 mongoose.connect(config.database.url);
 var database = mongoose.connection;
@@ -40,7 +41,9 @@ console.log('\nO===> Start API on ' + app.get('env').toUpperCase() + ' environme
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    createApiRes(req, res, 404, {}, 'Route not found');
+    return res.status(404).json({
+        error: "Route Not Found"
+    });
 });
 
 // development error handler

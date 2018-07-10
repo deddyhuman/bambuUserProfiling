@@ -36,7 +36,7 @@ router.post('/register', function (req, res, next) {
                     });
                 } else {
                     return res.status(200).json({
-                        profile_type: ''
+                        profile_type: result.userProfileType
                     });
                 }
             })

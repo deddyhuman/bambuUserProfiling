@@ -48,6 +48,7 @@ userSchema.methods.register = function(req, userData, callback) {
     var self = this,
         userModel = self.model('user'),
         profilingQuestions = self.getFormatedProfilingQuestions(userData.questions),
+        userProfileType = self.getUserProfileType(profilingQuestions),
         user = new userModel({
             email: userData.email,
             password: this.generateHash(userData.password || ''),
@@ -70,6 +71,58 @@ userSchema.methods.register = function(req, userData, callback) {
 };
 
 /**
+ * Format question data into database formated and
+ * @param questions
+ * @returns {Array}
+ */
+userSchema.methods.getFormatedProfilingQuestions = function(questions) {
+    var profilingQuestions = [];
+    for (var questionType in questions) {
+        profilingQuestions.push({
+            question_type: questionType,
+            user_answer: parseInt(questions[questionType]),
+            score: this.getAnswerScore(questions, questionType)
+        });
+    };
+    return profilingQuestions;
+};
+
+/**
+ * There is two way to get score, from the database or calculate the score by the code on the fly
+ * In the future the calculation of the score might be change,
+ * therefore the score is better calculate by the code on the fly instead saved into database.
+ * @param questions
+ * @param questionType
+ */
+userSchema.methods.getAnswerScore = function(questions, questionType) {
+    var userAnswer = parseInt(questions[questionType]);
+    switch (questionType) {
+        case 'saving_amount':
+            switch (userAnswer) {
+                case 2000:  return 1;
+                case 4000:  return 2;
+                case 6000:  return 3;
+                case 8000:  return 4;
+                case 10000:  return 5;
+                default: return 0;
+            }
+
+        case 'loan_amount':
+            switch (userAnswer) {
+                case 2000:  return 5;
+                case 4000:  return 4;
+                case 6000:  return 3;
+                case 8000:  return 2;
+                case 10000:  return 1;
+                default: return 0;
+            }
+
+        default:
+            return 0;
+    }
+};
+
+/**
  * The user will be profiled based on the score.
  * Profile A is if the score is >= 8, B for >= 6, C for >= 4, and D for >= 2.
  * @param questions
@@ -80,7 +133,17 @@ userSchema.methods.getUserProfileType = function(profilingQuestions) {
     for (var questionType in profilingQuestions) {
         score += profilingQuestions[questionType].score;
     }
-    return score;
+    if (score >= 8) {
+        return 'A';
+    } else if (score >= 6) {
+        return 'B';
+    } else if (score >= 4) {
+        return 'C';
+    } else if (score >= 2) {
+        return 'D';
+    } else {
+        return '';
+    }
 }
 
 /**
